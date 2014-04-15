@@ -1,0 +1,111 @@
+function massesSetup()
+
+    Masses = [[
+
+1.00794	Hydrogen	H	1
+4.002602	Helium	He	2
+6.941	Lithium	Li	3
+9.012182	Beryllium	Be	4
+10.811	Boron	B	5
+12.011	Carbon	C	6
+14.00674	Nitrogen	N	7
+15.9994	Oxygen	O	8
+18.9984	Fluorine	F	9
+20.1797	Neon	Ne	10
+22.98977	Sodium	Na	11
+24.305	Magnesium	Mg	12
+26.98154	Aluminum	Al	13
+28.0855	Silicon	Si	14
+30.97376	Phosphorus	P	15
+32.066	Sulfur	S	16
+35.4527	Chlorine	Cl	17
+39.0983	Potassium	K	19
+39.948	Argon	Ar	18
+40.078	Calcium	Ca	20
+44.95591	Scandium	Sc	21
+47.88	Titanium	Ti	22
+50.9415	Vanadium	V	23
+51.9961	Chromium	Cr	24
+54.93805	Manganese	Mn	25
+55.847	Iron	Fe	26
+58.6934	Nickel	Ni	28
+58.9332	Cobalt	Co	27
+63.546	Copper	Cu	29
+65.39	Zinc	Zn	30
+69.723	Gallium	Ga	31
+72.61	Germanium	Ge	32
+74.92159	Arsenic	As	33
+78.96	Selenium	Se	34
+79.904	Bromine	Br	35
+83.8	Krypton	Kr	36
+85.4678	Rubidium	Rb	37
+87.62	Strontium	Sr	38
+88.90585	Yttrium	Y	39
+91.224	Zirconium	Zr	40
+92.90638	Niobium	Nb	41
+95.94	Molybdenum	Mo	42
+98	Technetium	Tc	43
+101.07	Ruthenium	Ru	44
+102.9055	Rhodium	Rh	45
+106.42	Palladium	Pd	46
+107.8682	Silver	Ag	47
+112.411	Cadmium	Cd	48
+114.818	Indium	In	49
+118.71	Tin	Sn	50
+121.757	Antimony	Sb	51
+126.9045	Iodine	I	53
+127.6	Tellurium	Te	52
+131.29	Xenon	Xe	54
+132.9054	Cesium	Cs	55
+137.327	Barium	Ba	56
+138.9055	Lanthanum	La	57
+140.115	Cerium	Ce	58
+140.9077	Praseodymium	Pr	59
+144.24	Neodymium	Nd	60
+145	Promethium	Pm	61
+150.36	Samarium	Sm	62
+151.965	Europium	Eu	63
+157.25	Gadolinium	Gd	64
+158.9253	Terbium	Tb	65
+162.5	Dysprosium	Dy	66
+164.9303	Holmium	Ho	67
+167.26	Erbium	Er	68
+168.9342	Thulium	Tm	69
+173.04	Ytterbium	Yb	70
+174.967	Lutetium	Lu	71
+178.49	Hafnium	Hf	72
+180.9479	Tantalum	Ta	73
+183.85	Tungsten	W	74
+186.207	Rhenium	Re	75
+190.2	Osmium	Os	76
+192.22	Iridium	Ir	77
+195.08	Platinum	Pt	78
+196.9665	Gold	Au	79
+200.59	Mercury	Hg	80
+204.3833	Thallium	Tl	81
+207.2	Lead	Pb	82
+208.9804	Bismuth	Bi	83
+208.9824	Polonium	Po	84
+209.9871	Astatine	At	85
+213.0359	Protactinium	Pa	91
+222	Radon	Rn	86
+223	Francium	Fr	87
+226.0254	Radium	Ra	88
+227.0728	Actinium	Ac	89
+232.0381	Thorium	Th	90
+237.0482	Neptunium	Np	93
+238.0289	Uranium	U	92
+243.0614	Americium	Am	95
+244.0642]]
+--saveProjectTab("Data", Masses:gsub("[^A-Za-z.\n]", ""))
+    
+    Elems = {}
+    for mass, name, abbr, num in Masses:gmatch("(%d+%.%d+)%s(%a+)%s(%a+)%s(%d+)") do
+        Elems[abbr:upper()] = {
+            ["name"] = name,
+            ["mass"] = mass,
+            ["num"] = num
+        }
+    end
+    
+end
