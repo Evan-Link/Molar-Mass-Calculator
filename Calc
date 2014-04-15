@@ -1,0 +1,256 @@
+title = "Molar Mass calculator - ver. 6.4.0"
+
+
+
+elemsTbl = {"C6", "H12", "O6"}
+
+textMode(CORNER)
+
+cursor = {1, 2}
+
+showKeyboard()
+
+font("Inconsolata")
+
+noSmooth()
+
+displayMode(FULLSCREEN_NO_BUTTONS)
+
+local cursorLastActive = 0
+local lastCopied = os.clock() - 4
+
+function round(num, digits)
+    num = num * 10^digits
+    if num - math.floor(num) > 0.5 then
+        return math.ceil(num) / 10^digits
+    else
+        return math.floor(num) / 10^digits
+    end
+end
+
+massCalc = function(mode)
+    
+    local n, total = "", {0}
+    
+    for i, v in ipairs(elemsTbl) do
+        
+        local val = (v:gsub("[^A-Za-z0-9]", "")):upper() --Uppercase everything, remove invalid characters
+        
+        if val == "" then
+            
+            --No value
+            
+        elseif not( tonumber(v:sub(2, -1)) or tonumber(v:sub(3, -1)) ) and Elems[val] then
+            
+            n = n .. v:sub(1, 2) .. ": " .. 1 .. "\n"
+            
+            if total[val] then
+                total[val] = total[val] + Elems[val].mass
+            else
+                total[val] = Elems[val].mass
+            end
+            
+            total[1] = total[1] + Elems[(v:sub(1, 2)):upper()].mass
+            
+        elseif not( tonumber(v:sub(2, -1)) or tonumber(v:sub(3, -1)) ) then
+            n = n .. "UNKNOWN\n"
+        elseif not(Elems[val:sub(1, 1)] or Elems[val:sub(1, 2)]) then
+            n = n .. "Unknown element " .. val .. "\n"
+        elseif (val:sub(1,2)):match("%u%u") then
+            
+            n = n .. v:sub(1, 2) .. ": " .. v:sub(3, -1) .. "\n"
+            
+            if total[v:sub(1, 2)] then
+                total[v:sub(1, 2)] = total[v:sub(1, 2)] + v:sub(3, -1) * Elems[(v:sub(1, 2)):upper()].mass
+            else
+                total[v:sub(1, 2)] = v:sub(3, -1) * Elems[(v:sub(1, 2)):upper()].mass
+            end
+            
+            total[1] = total[1] + v:sub(3, -1) * Elems[(v:sub(1, 2)):upper()].mass
+            
+        elseif (val:sub(1,2)):match("%u%d") then
+            
+            n = n .. v:sub(1, 1) .. ": " .. v:sub(2, -1) .. "\n"
+            
+            if total[v:sub(1, 1)] then
+                total[v:sub(1, 1)] = total[v:sub(1, 1)] + v:sub(2, -1) * Elems[(v:sub(1, 1)):upper()].mass
+            else
+                total[v:sub(1, 1)] = v:sub(2, -1) * Elems[(v:sub(1, 1)):upper()].mass
+            end
+            
+            total[1] = total[1] + v:sub(2, -1) * Elems[(v:sub(1, 1)):upper()].mass
+        end
+    end
+    
+    n = n .. "\n"
+    
+    for i, v in pairs(total) do
+        
+        if i ~= 1 then
+            
+            n = n .. i .. ": " .. round(v, 3) .. " g/mol\n"
+            
+        end
+    end
+    
+    n = n .. "\n" .. table.concat(elemsTbl, "") .. "\nTotal molar mass: " .. total[1]
+    
+    return not(mode) and n or total[1]
+end
+    
+drawMain = function()
+    if ContentScaleFactor == 2 then
+        strokeWidth(0.5)
+    else
+        strokeWidth(1)
+    end
+    local start
+    if isKeyboardShowing() == true then
+        if CurrentOrientation == PORTRAIT or CurrentOrientation == PORTRAIT_UPSIDE_DOWN then
+            start = HEIGHT / 2 - 226
+            tabsAvailable = 6
+        else
+            start = HEIGHT / 2 - 10
+            tabsAvailable = 9
+        end
+    else
+        start = 20
+    end
+    fill(0,0,0,80)
+    --noStroke()
+    if #elemsTbl <= tabsAvailable then
+        rect(0, start - 22, WIDTH, 53)
+    else
+        rect(0, start - 22, WIDTH, 93)
+    end
+    for i, v in ipairs(elemsTbl) do
+        if i == #elemsTbl and v ~= "" then
+            elemsTbl[i + 1] = ""
+        elseif i == #elemsTbl and v == "" and elemsTbl[i - 1] == "" then
+            elemsTbl[i] = nil
+        end
+        v = v:gsub(" ", "")
+        if i <= tabsAvailable then
+            fill(0, 0, 0, 125)
+            rect(i * 110 - 100, start - 10, 100, 30)
+            fill(255)
+            text(v, i * 110 - 90, start - 5)
+        else
+            fill(0, 0, 0, 125)
+            rect((i - tabsAvailable) * 110 - 100, start + 30, 100, 30)
+            fill(255)
+            text(v, (i - tabsAvailable) * 110 - 90, start + 35)
+        end
+    end
+    if math.mod((os.clock() - cursorLastActive) * 2, 1) - math.floor(math.mod((os.clock() - cursorLastActive) * 2, 1)) < 0.5 and isKeyboardShowing() then
+        stroke(255, 0, 0, 255)
+        strokeWidth(1)
+        local c, h = cursor[1], 0
+        if cursor[1] > tabsAvailable then
+            c = cursor[1] - tabsAvailable
+            h = 40
+        end
+        line(c * 110 - 90 + 8.5 * cursor[2], start - 5 + h, c * 110 - 90 + 8.5 * cursor[2], start + 13 + h)
+    end
+    
+    local h = 0
+    if #elemsTbl > tabsAvailable then
+        h = 40
+    end
+    
+    stroke(0)
+    
+    fill(0)
+    text(massCalc(), 10, start + 40 + h)
+    
+    noStroke()
+    fill(255,0,0,100)
+    rect(10, HEIGHT - 40, 100, 30)
+    fill(0)
+    textMode(CENTER)
+    text("Close", 60, HEIGHT - 25)
+    
+    stroke(0)
+    strokeWidth(1 / ContentScaleFactor)
+    
+    fill(255, 0, 0, 100)
+    rect(WIDTH - 105, start + 36 + h, 100, 30)
+    fill(0)
+    text("Paste", WIDTH - 60, start + 51 + h)
+    
+    fill(255, 0, 0, 100)
+    rect(WIDTH - 210, start + 36 + h, 100, 30)
+    fill(0)
+    text("Copy", WIDTH - 160, start + 51 + h)
+    
+    fill(0, 255, 0, 400 - (os.clock() - lastCopied) * 400)
+    text("Copied!", WIDTH - 160, start + 76 + h)
+    
+    fill(0)
+    
+    textMode(CORNER)
+    text(title, 115, HEIGHT - 35)
+end
+
+function touched(touch)
+    local start
+    if isKeyboardShowing() == true then
+        start = HEIGHT / 2 - 10
+    else
+        start = 20
+    end
+    local h = 20
+    if #elemsTbl > 9 then
+        h = 60
+    end
+    if 
+        touch.y > start - 10 and touch.y < start + h and
+        touch.x > 10 and touch.x < #elemsTbl * 110 and
+        touch.state == ENDED
+    then
+        if touch.y < start + 20 then
+            cursor[1] = math.ceil(touch.x / 110)
+        elseif math.ceil(touch.x / 110) + 9 <= #elemsTbl then
+            cursor[1] = math.ceil(touch.x / 110) + 9
+        end
+        cursor[2] = math.ceil(
+            (touch.x - 10 - (math.floor((touch.x) / 110) * 110)) / 9
+        ) - 1
+        cursor[2] = cursor[2] <= (elemsTbl[cursor[1]]):len() and cursor[2]
+            or (elemsTbl[cursor[1]]):len()
+        cursor[2] = cursor[2] >= 0 and cursor[2] or 0
+        if not isKeyboardShowing() then
+            showKeyboard()
+        end
+        cursorLastActive = os.clock()
+    elseif touch.x < 105 and touch.y > HEIGHT - 35 then
+        close()
+    elseif touch.x > WIDTH - 105 and touch.y > start + 36 and touch.y < start + 66 and pasteboard.text then
+        loadFormula(pasteboard.text)
+    elseif touch.x > WIDTH - 210 and touch.x < WIDTH - 110 and touch.y > start + 36 and touch.y < start + 66 then
+        pasteboard.copy(massCalc(true))
+        lastCopied = os.clock()
+    end
+    
+end
+
+function keyboard(key)
+    cursorLastActive = os.clock()
+    if key == "\n" then
+        cursor[1] = math.mod(cursor[1], #elemsTbl) + 1
+        cursor[2] = (elemsTbl[cursor[1]]):len()
+    elseif key == BACKSPACE then
+        elemsTbl[cursor[1]] = 
+            (elemsTbl[cursor[1]]):sub(1, cursor[2] - 1) ..
+            (elemsTbl[cursor[1]]):sub(cursor[2] + 1, -1)
+        
+        cursor[2] = cursor[2] - 1 >= 0 and cursor[2] - 1 or 0
+    elseif key:match("[^A-Za-z0-9]") then
+        --Ignores
+    else
+        elemsTbl[cursor[1]] = 
+            (elemsTbl[cursor[1]]):sub(1, cursor[2]) .. key ..
+            (elemsTbl[cursor[1]]):sub(cursor[2] + 1, -1)
+        cursor[2] = cursor[2] + 1
+    end
+end
